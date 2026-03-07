@@ -1,12 +1,15 @@
-namespace Weather.Services;
-
-using Weather.Interfaces;
 using Weather.Configurations;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Weather.Data;
 using Weather.DTOs.Auth;
+using Weather.Interfaces;
 using Weather.Models;
+
+namespace Weather.Services;
+
+ 
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+ 
 
  
 public class AuthService : IAuthService

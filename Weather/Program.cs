@@ -7,6 +7,7 @@ using Weather.Endpoints;
 using Weather.Services;
 using Weather.Configurations;
 using Weather.Interfaces;
+using Weather.Services.WeatherService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,9 +44,25 @@ builder.Services.AddAuthentication(options =>
             ClockSkew = TimeSpan.Zero // убираем задержку по умолчанию (5 минут)
         };
     });
+// Регистрация HttpClient для каждого провайдера с базовым адресом
+builder.Services.AddHttpClient<OpenWeatherMapProvider>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openweathermap.org/");
+});
+
+builder.Services.AddHttpClient<WeatherApiProvider>(client =>
+{
+    client.BaseAddress = new Uri("https://api.weatherapi.com/");
+});
 
 // Добавляем авторизацию (пока без политик)
 builder.Services.AddAuthorization();
+
+// Регистрация всех провайдеров
+builder.Services.AddScoped<IWeatherProvider, OpenWeatherMapProvider>();
+builder.Services.AddScoped<IWeatherProvider, WeatherApiProvider>();
+
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
@@ -66,6 +83,7 @@ app.UseHttpsRedirection();
 
 // Здесь позже будут наши эндпоинты (регистрация, логин, погода)
 app.MapAuthEndpoints();
+app.MapWeatherEndpoints();
 app.UseAuthentication();
 app.UseAuthorization();
 app.Run();

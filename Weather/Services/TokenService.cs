@@ -1,4 +1,7 @@
+using Weather.Configurations;
+using Weather.Data;
 using Weather.Interfaces;
+using Weather.Models;
 
 namespace Weather.Services;
 
@@ -8,9 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Weather.Configurations;
-using Weather.Data;
-using Weather.Models;
+ 
 
  
 public class TokenService : ITokenService

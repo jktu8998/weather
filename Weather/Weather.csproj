@@ -31,7 +31,6 @@
 
     <ItemGroup>
       <Folder Include="Cache\" />
-      <Folder Include="DTOs\Weather\" />
       <Folder Include="Extensions\" />
       <Folder Include="Middlewares\" />
     </ItemGroup>
