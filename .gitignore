@@ -1,0 +1,60 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+ 
+## Игнорируем файлы операционной системы
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Игнорируем папки и файлы, создаваемые IDE
+.vscode/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.sln.docstates
+
+## Игнорируем результаты сборки
+bin/
+obj/
+**/bin/
+**/obj/
+
+## Игнорируем пакеты NuGet (если храните их не в репозитории)
+packages/
+*.nupkg
+
+## Игнорируем файлы конфигурации с секретами (если вынесли)
+appsettings.Development.json
+appsettings.Production.json
+secrets.json
+
+## Игнорируем файлы базы данных SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+## Игнорируем файлы логов и временные файлы
+*.log
+*.tmp
+*.temp
+/Logs/
+
+## Игнорируем сгенерированные файлы
+/Generated/
+
+## Игнорируем файлы развертывания
+publish/
+*.publish.xml
+
+## Игнорируем файлы покрытия тестов
+*.coverage
+*.coveragexml
+*.trx
+ 
+## Игнорируем конфигурацию пользователя
+*.user
+launchSettings.json (опционально, если хотите хранить свои настройки запуска отдельно)
