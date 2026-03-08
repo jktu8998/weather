@@ -58,12 +58,23 @@ builder.Services.AddHttpClient<WeatherApiProvider>(client =>
 {
     client.BaseAddress = new Uri("https://api.weatherapi.com/");
 });
+// Добавляем HttpClient для wttr.in
+builder.Services.AddHttpClient<WttrInProvider>(client =>
+{
+    client.BaseAddress = new Uri("https://wttr.in/");
+    // wttr.in может блокировать запросы без User-Agent
+    client.DefaultRequestHeaders.Add("User-Agent", "WeatherApp/1.0");
+});
 // Регистрируем интерфейсы, используя уже зарегистрированные типы
 builder.Services.AddScoped<IWeatherProvider, OpenWeatherMapProvider>(sp =>
     sp.GetRequiredService<OpenWeatherMapProvider>());
 
 builder.Services.AddScoped<IWeatherProvider, WeatherApiProvider>(sp =>
     sp.GetRequiredService<WeatherApiProvider>());
+
+// Регистрируем провайдер
+builder.Services.AddScoped<IWeatherProvider, WttrInProvider>(sp =>
+    sp.GetRequiredService<WttrInProvider>());
 
 
 builder.Services.AddScoped<IWeatherAggregator, WeatherAggregator>();
