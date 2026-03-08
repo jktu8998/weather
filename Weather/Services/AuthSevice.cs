@@ -18,17 +18,20 @@ public class AuthService : IAuthService
     private readonly PasswordHasher<User> _passwordHasher;
     private readonly ITokenService _tokenService;
     private readonly JwtSettings _jwtSettings;
+    private readonly ILogger<AuthService> _logger;
     
-    public AuthService(AppDbContext context, ITokenService tokenService, JwtSettings jwtSettings)
+    public AuthService(AppDbContext context, ITokenService tokenService, JwtSettings jwtSettings,ILogger<AuthService> logger)
     {
         _context = context;
         _passwordHasher = new PasswordHasher<User>();
         _tokenService = tokenService;
         _jwtSettings = jwtSettings;
+        _logger = logger;
     }
 
     public async Task<AuthResult> RegisterAsync( RegistrRequest request)
     {
+        _logger.LogInformation("Попытка регистрации пользователя с email {Email}", request.Email);
         // Проверяем, не занят ли email
         var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         if (existingUser != null)
@@ -42,15 +45,17 @@ public class AuthService : IAuthService
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
-
+        _logger.LogInformation("Пользователь {Email} успешно зарегистрирован (Id: {UserId})", request.Email, user.Id);
         return new AuthResult { Success = true, Message = "Registration successful" };
     }
     public async Task<TokenResponse> LoginAsync(LoginRequest request)
     {
+        _logger.LogInformation("Попытка входа пользователя с email {Email}", request.Email);
         // 1. Ищем пользователя по email
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         if (user == null)
         {
+            _logger.LogWarning("Вход отклонён: пользователь с email {Email} не найден", request.Email);
             throw new UnauthorizedAccessException("Invalid email or password");
         }
         
@@ -58,6 +63,7 @@ public class AuthService : IAuthService
         var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
         if (verificationResult == PasswordVerificationResult.Failed)
         {
+            _logger.LogWarning("Вход отклонён: неверный пароль для email {Email}", request.Email);
             throw new UnauthorizedAccessException("Invalid email or password");
         }
 

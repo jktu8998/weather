@@ -17,14 +17,19 @@ public static class WeatherEndpoints
             .RequireAuthorization() // защита JWT
             .WithTags("Weather");
 
-        group.MapGet("/{city}", async (string city, [FromServices] IWeatherAggregator aggregator) =>
+        group.MapGet("/{city}", async (string city, [FromServices] IWeatherAggregator aggregator,
+        [FromServices]ILogger<Program> logger) =>
             {
                 if (string.IsNullOrWhiteSpace(city))
                     return Results.BadRequest("City is required");
-
+                logger.LogInformation("Получен GET-запрос для города {City}", city);
                 var result = await aggregator.GetWeatherWithCacheAsync(city);
-                return result == null ? Results.NotFound("No weather data found") : Results.Ok(result);
-            })
+                if (result == null)
+                {
+                    logger.LogWarning("Данные не найдены для города {City}", city);
+                    return Results.NotFound("No weather data found");
+                }
+                return Results.Ok(result);            })
             .WithName("GetWeather")
             .WithOpenApi();
 
