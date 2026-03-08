@@ -82,4 +82,125 @@ public class AuthService : IAuthService
             AccessTokenExpiresIn = _jwtSettings.AccessTokenLifetimeMinutes * 60
         };
     }
+    public async Task<TokenResponse> RefreshTokenAsync(string refreshToken)
+    {
+        _logger.LogInformation("Попытка обновления токенов с refreshToken");
+
+        _logger.LogInformation("Refresh attempt with token: {RefreshToken}", refreshToken);
+
+        var tokenEntity = await _context.RefreshTokens
+            .Include(rt => rt.User)
+            .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+
+        if (tokenEntity == null)
+        {
+            _logger.LogWarning("Refresh token not found in DB");
+            throw new UnauthorizedAccessException("Invalid refresh token");
+        }
+
+        _logger.LogInformation("Token found: UserId={UserId}, Expiry={Expiry}, IsRevoked={IsRevoked}",
+            tokenEntity.UserId, tokenEntity.ExpiryDate, tokenEntity.IsRevoked);
+
+        if (tokenEntity.IsRevoked || tokenEntity.ExpiryDate < DateTime.UtcNow)
+        {
+            _logger.LogWarning("Token is revoked or expired");
+            throw new UnauthorizedAccessException("Invalid refresh token");
+        }
+      
+
+        if (tokenEntity == null)
+        {
+            _logger.LogWarning("Refresh token не найден");
+            throw new UnauthorizedAccessException("Invalid refresh token");
+        }
+
+        // 2. Проверяем, не отозван ли и не истёк ли
+        if (tokenEntity.IsRevoked || tokenEntity.ExpiryDate < DateTime.UtcNow)
+        {
+            _logger.LogWarning("Refresh token отозван или истёк для пользователя {UserId}", tokenEntity.UserId);
+            throw new UnauthorizedAccessException("Invalid refresh token");
+        }
+
+        // 3. Отзываем старый токен (однократное использование)
+        tokenEntity.IsRevoked = true;
+        await _context.SaveChangesAsync();
+
+        // 4. Генерируем новую пару
+        var newAccessToken = _tokenService.GenerateAccessToken(tokenEntity.User);
+        var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+        // 5. Сохраняем новый refresh token в БД
+        await _tokenService.StoreRefreshTokenAsync(tokenEntity.UserId, newRefreshToken);
+
+        _logger.LogInformation("Токены успешно обновлены для пользователя {UserId}", tokenEntity.UserId);
+
+        return new TokenResponse
+        {
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken,
+            AccessTokenExpiresIn = _jwtSettings.AccessTokenLifetimeMinutes * 60
+        };
+    }
+    public async Task<AuthResult> ChangePasswordAsync(int userId, ChangePasswordRequest request)
+{
+    _logger.LogInformation("User {UserId} attempting to change password", userId);
+
+    var user = await _context.Users.FindAsync(userId);
+    if (user == null)
+    {
+        _logger.LogWarning("User {UserId} not found for password change", userId);
+        return new AuthResult { Success = false, Message = "User not found" };
+    }
+
+    // Проверяем текущий пароль
+    var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword);
+    if (verificationResult == PasswordVerificationResult.Failed)
+    {
+        _logger.LogWarning("User {UserId} provided incorrect current password", userId);
+        return new AuthResult { Success = false, Message = "Current password is incorrect" };
+    }
+
+    // Хешируем новый пароль
+    user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
+    _context.Users.Update(user);
+
+    // Опционально: отзываем все refresh-токены пользователя, чтобы старые сессии не работали
+    await _tokenService.RevokeAllUserRefreshTokensAsync(userId);
+
+    await _context.SaveChangesAsync();
+
+    _logger.LogInformation("Password changed successfully for user {UserId}", userId);
+    return new AuthResult { Success = true, Message = "Password changed successfully" };
+}
+
+  public async Task<AuthResult> DeleteAccountAsync(int userId, string password)
+{
+    _logger.LogInformation("User {UserId} attempting to delete account", userId);
+
+    var user = await _context.Users.FindAsync(userId);
+    if (user == null)
+    {
+        _logger.LogWarning("User {UserId} not found for deletion", userId);
+        return new AuthResult { Success = false, Message = "User not found" };
+    }
+
+    // Проверяем пароль
+    var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+    if (verificationResult == PasswordVerificationResult.Failed)
+    {
+        _logger.LogWarning("User {UserId} provided incorrect password for account deletion", userId);
+        return new AuthResult { Success = false, Message = "Password is incorrect" };
+    }
+
+    // Удаляем все связанные refresh-токены (или помечаем отозванными)
+    var refreshTokens = _context.RefreshTokens.Where(rt => rt.UserId == userId);
+    _context.RefreshTokens.RemoveRange(refreshTokens);
+
+    // Удаляем пользователя
+    _context.Users.Remove(user);
+    await _context.SaveChangesAsync();
+
+    _logger.LogInformation("Account deleted for user {UserId}", userId);
+    return new AuthResult { Success = true, Message = "Account deleted successfully" };
+ }
 }

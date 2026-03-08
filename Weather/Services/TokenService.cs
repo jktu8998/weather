@@ -81,4 +81,22 @@ public class TokenService : ITokenService
 
         return true;
     }
+    public async Task RevokeRefreshTokenAsync(string refreshToken)
+    {
+        var token = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+        if (token != null)
+        {
+            token.IsRevoked = true;
+            await _context.SaveChangesAsync();
+        }
+    }
+    public async Task RevokeAllUserRefreshTokensAsync(int userId)
+    {
+        var tokens = _context.RefreshTokens.Where(rt => rt.UserId == userId && !rt.IsRevoked);
+        foreach (var token in tokens)
+        {
+            token.IsRevoked = true;
+        }
+        await _context.SaveChangesAsync();
+    }
 }

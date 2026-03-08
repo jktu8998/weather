@@ -123,16 +123,17 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi(); // эндпоинт для OpenAPI документации (JSON)
 }
 
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
-app.Use(async (context, next) =>
-{
-    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-    logger.LogInformation("Incoming request: {Method} {Path}", context.Request.Method, context.Request.Path);
-    await next();
-});
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+//app.Use(async (context, next) =>
+//{
+//    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+//    logger.LogInformation("Incoming request: {Method} {Path}", context.Request.Method, context.Request.Path);
+//    await next();
+//});
 // Здесь позже будут наши эндпоинты (регистрация, логин, погода)
 app.UseAuthentication();
+app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseAuthorization();
 app.MapAuthEndpoints();
 app.MapWeatherEndpoints();

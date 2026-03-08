@@ -75,5 +75,20 @@ public class WeatherAggregator : IWeatherAggregator
             entry.AbsoluteExpirationRelativeToNow = _cacheDuration;
             return await GetWeatherAsync(city, cancellationToken);
         });
+        if (_cache.TryGetValue(cacheKey, out WeatherResponse? cached))
+        {
+            _logger.LogInformation("Cache HIT для города {City}", city);
+            return cached;
+        }
+
+        _logger.LogInformation("Cache MISS для города {City}, запрашиваем свежие данные", city);
+        var result = await GetWeatherAsync(city, cancellationToken);
+        if (result != null)
+        {
+            _cache.Set(cacheKey, result, _cacheDuration);
+            _logger.LogInformation("Данные для города {City} сохранены в кеш", city);
+        }
+        return result;
     }
+    
 }

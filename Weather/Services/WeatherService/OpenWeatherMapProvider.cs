@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Weather.Interfaces;
 using Weather.Models;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ public class OpenWeatherMapProvider : IWeatherProvider
 
     public async Task<WeatherData?> GetWeatherAsync(string city, CancellationToken cancellationToken = default)
     {
+        var stopwatch = Stopwatch.StartNew();
         try
         {
             var url = $"data/2.5/weather?q={city}&appid={_apiKey}&units=metric";
@@ -43,6 +45,9 @@ public class OpenWeatherMapProvider : IWeatherProvider
             var windSpeed = root.GetProperty("wind").GetProperty("speed").GetDouble() * 3.6; // м/с -> км/ч
             var condition = root.GetProperty("weather")[0].GetProperty("description").GetString() ?? "";
 
+            stopwatch.Stop();
+            _logger.LogInformation("OpenWeatherMap ответил за {ElapsedMs} мс для города {City}", stopwatch.ElapsedMilliseconds, city);
+            
             return new WeatherData
             {
                 City = city,
@@ -52,9 +57,10 @@ public class OpenWeatherMapProvider : IWeatherProvider
                 Source = ProviderName
             };
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при запросе к OpenWeatherMap для города {City}", city);
+            stopwatch.Stop();
+            _logger.LogError(ex, "Ошибка OpenWeatherMap через {ElapsedMs} мс для города {City}", stopwatch.ElapsedMilliseconds, city);
             return null;
         }
     }
