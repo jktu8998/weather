@@ -33,23 +33,44 @@ public static class WeatherEndpoints
             .WithName("GetWeather")
             .WithOpenApi();
 
-        group.MapPost("/compare", async (CompareRequest request,[FromServices] IWeatherAggregator aggregator) =>
+        group.MapPost("/compare", async (CompareRequest request, [FromServices] IWeatherAggregator aggregator) =>
+        {
+            if (request.Cities.Count != 2)
+                return Results.BadRequest("Please provide exactly two cities");
+        
+            var city1 = request.Cities[0];
+            var city2 = request.Cities[1];
+        
+            // Получаем данные (из кеша или напрямую)
+            var result1 = await aggregator.GetWeatherWithCacheAsync(city1);
+            var result2 = await aggregator.GetWeatherWithCacheAsync(city2);
+        
+            if (result1 == null || result2 == null)
+                return Results.NotFound("One or both cities not found");
+        
+            // Вычисляем сравнение
+            var comparison = new ComparisonResult
             {
-                if (request.Cities.Count != 2)
-                    return Results.BadRequest("Please provide exactly two cities");
-
-                var city1 = request.Cities[0];
-                var city2 = request.Cities[1];
-
-                var result1 = await aggregator.GetWeatherWithCacheAsync(city1);
-                var result2 = await aggregator.GetWeatherWithCacheAsync(city2);
-
-                if (result1 == null || result2 == null)
-                    return Results.NotFound("One or both cities not found");
-
-                return Results.Ok(new { City1 = result1, City2 = result2 });
-            })
-            .WithName("CompareWeather")
-            .WithOpenApi();
+                TemperatureDifference = Math.Abs(result1.Average.TemperatureC - result2.Average.TemperatureC),
+                WarmerCity = result1.Average.TemperatureC > result2.Average.TemperatureC ? result1.City : result2.City,
+                WindDifference = Math.Abs(result1.Average.WindSpeedKph - result2.Average.WindSpeedKph),
+                LessWindyCity = result1.Average.WindSpeedKph < result2.Average.WindSpeedKph ? result1.City : result2.City,
+                Summary = $"В городе {result1.City} температура {result1.Average.TemperatureC:F1}°C, ветер {result1.Average.WindSpeedKph:F1} км/ч; " +
+                          $"в городе {result2.City} температура {result2.Average.TemperatureC:F1}°C, ветер {result2.Average.WindSpeedKph:F1} км/ч. " +
+                          $"Температура выше в { (result1.Average.TemperatureC > result2.Average.TemperatureC ? result1.City : result2.City) } на {Math.Abs(result1.Average.TemperatureC - result2.Average.TemperatureC):F1}°C. " +
+                          $"Ветер слабее в { (result1.Average.WindSpeedKph < result2.Average.WindSpeedKph ? result1.City : result2.City) } на {Math.Abs(result1.Average.WindSpeedKph - result2.Average.WindSpeedKph):F1} км/ч."
+            };
+        
+            var response = new CompareResponse
+            {
+                City1 = result1,
+                City2 = result2,
+                Comparison = comparison
+            };
+        
+            return Results.Ok(response);
+        })
+        .WithName("CompareWeather")
+        .WithOpenApi();
     }
 }
