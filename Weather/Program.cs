@@ -8,6 +8,7 @@ using Weather.Services;
 using Weather.Configurations;
 using Weather.Interfaces;
 using Weather.Middlewares;
+using Weather.Services.Geocoding;
 using Weather.Services.WeatherService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -65,6 +66,30 @@ builder.Services.AddHttpClient<WttrInProvider>(client =>
     // wttr.in может блокировать запросы без User-Agent
     client.DefaultRequestHeaders.Add("User-Agent", "WeatherApp/1.0");
 });
+// Регистрируем HTTP-клиента для геокодинга
+builder.Services.AddHttpClient<OpenMeteoGeocodingService>(client =>
+{
+    client.BaseAddress = new Uri("https://geocoding-api.open-meteo.com/v1/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Add("User-Agent", "YourWeatherApp/1.0");
+});
+
+// Регистрируем HTTP-клиента для погодного API Open-Meteo
+builder.Services.AddHttpClient<OpenMeteoProvider>(client =>
+{
+    client.BaseAddress = new Uri("https://api.open-meteo.com/v1/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Add("User-Agent", "YourWeatherApp/1.0");
+});
+
+// Регистрируем провайдер OpenMeteo
+builder.Services.AddScoped<IWeatherProvider, OpenMeteoProvider>(sp =>
+    sp.GetRequiredService<OpenMeteoProvider>());
+
+// Регистрируем сервис геокодинга через его интерфейс
+builder.Services.AddScoped<IGeocodingService, OpenMeteoGeocodingService>(sp =>
+    sp.GetRequiredService<OpenMeteoGeocodingService>());
+
 // Регистрируем интерфейсы, используя уже зарегистрированные типы
 builder.Services.AddScoped<IWeatherProvider, OpenWeatherMapProvider>(sp =>
     sp.GetRequiredService<OpenWeatherMapProvider>());
