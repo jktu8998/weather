@@ -1,7 +1,6 @@
-using Weather.Interfaces;
-
 namespace Weather.Services.WeatherService;
 
+using Weather.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Weather.DTOs.Weather;
 
@@ -67,27 +66,28 @@ public class WeatherAggregator : IWeatherAggregator
 
     public async Task<WeatherResponse?> GetWeatherWithCacheAsync(string city, CancellationToken cancellationToken = default)
     {
-        var cacheKey = $"weather_{city.ToLower()}";
+        // Приводим ключ к нижнему регистру с инвариантной культурой  
+        var cacheKey = $"weather_{city.ToLowerInvariant()}";
         _logger.LogDebug("Попытка получить данные из кеша по ключу {CacheKey}", cacheKey);
-        return await _cache.GetOrCreateAsync(cacheKey, async entry =>
-        {
-            _logger.LogInformation("Кеш для города {City} не найден или устарел, запрашиваем свежие данные", city);
-            entry.AbsoluteExpirationRelativeToNow = _cacheDuration;
-            return await GetWeatherAsync(city, cancellationToken);
-        });
+
+        // 1. Пытаемся получить значение из кеша
         if (_cache.TryGetValue(cacheKey, out WeatherResponse? cached))
         {
             _logger.LogInformation("Cache HIT для города {City}", city);
             return cached;
         }
 
+        // 2. Если в кеше нет – логируем промах и запрашиваем свежие данные
         _logger.LogInformation("Cache MISS для города {City}, запрашиваем свежие данные", city);
         var result = await GetWeatherAsync(city, cancellationToken);
+
+        // 3. Если данные получены, сохраняем их в кеш
         if (result != null)
         {
             _cache.Set(cacheKey, result, _cacheDuration);
             _logger.LogInformation("Данные для города {City} сохранены в кеш", city);
         }
+
         return result;
     }
     
