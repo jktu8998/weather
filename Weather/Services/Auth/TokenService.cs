@@ -55,7 +55,7 @@ public class TokenService : ITokenService
         return Convert.ToBase64String(randomNumber);
     }
 
-    public async Task<RefreshToken> StoreRefreshTokenAsync(int userId, string refreshToken)
+    public   Task<RefreshToken> StoreRefreshTokenAsync(int userId, string refreshToken)
     {
         var token = new RefreshToken
         {
@@ -66,36 +66,33 @@ public class TokenService : ITokenService
         };
 
         _context.RefreshTokens.Add(token);
-        await _context.SaveChangesAsync();
-        return token;
+        return   Task.FromResult(token);   // возвращаем завершённую задачу
     }
 
-    public async Task<bool> ValidateRefreshTokenAsync(int userId, string refreshToken)
-    {
-        var token = await _context.RefreshTokens
-            .FirstOrDefaultAsync(rt => rt.UserId == userId && rt.Token == refreshToken);
-
-        if (token == null || token.IsRevoked || token.ExpiryDate < DateTime.UtcNow)
-            return false;
-
-        return true;
-    }
-    public async Task RevokeRefreshTokenAsync(string refreshToken)
-    {
-        var token = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken);
-        if (token != null)
-        {
-            token.IsRevoked = true;
-            await _context.SaveChangesAsync();
-        }
-    }
+    // public async Task<bool> ValidateRefreshTokenAsync(int userId, string refreshToken)
+    // {
+    //     var token = await _context.RefreshTokens
+    //         .FirstOrDefaultAsync(rt => rt.UserId == userId && rt.Token == refreshToken);
+    //
+    //     if (token == null || token.IsRevoked || token.ExpiryDate < DateTime.UtcNow)
+    //         return false;
+    //
+    //     return true;
+    // }
+     public async Task RevokeRefreshTokenAsync(string refreshToken)
+     {
+         var token = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+         if (token != null)
+         {
+             token.IsRevoked = true;
+             //await _context.SaveChangesAsync();
+         }
+     }
     public async Task RevokeAllUserRefreshTokensAsync(int userId)
     {
-        var tokens = _context.RefreshTokens.Where(rt => rt.UserId == userId && !rt.IsRevoked);
-        foreach (var token in tokens)
-        {
-            token.IsRevoked = true;
-        }
-        await _context.SaveChangesAsync();
+        await _context.RefreshTokens
+            .Where(rt => rt.UserId == userId && !rt.IsRevoked)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(rt => rt.IsRevoked, true));
+        //await _context.SaveChangesAsync();
     }
 }
