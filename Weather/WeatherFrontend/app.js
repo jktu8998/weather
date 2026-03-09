@@ -154,7 +154,6 @@ function renderWeather(data, containerId) {
     const container = document.getElementById(containerId);
     container.innerHTML = ''; // очищаем
 
-    // Основная карточка
     const card = document.createElement('div');
     card.className = 'weather-card';
 
@@ -183,6 +182,7 @@ function renderWeather(data, containerId) {
     // Таблица деталей (изначально скрыта)
     const table = document.createElement('table');
     table.className = 'details-table';
+    table.style.display = 'none'; // <-- скрываем сразу
     table.innerHTML = `
         <thead>
             <tr><th>Источник</th><th>Температура (°C)</th><th>Ветер (км/ч)</th><th>Условия</th></tr>
@@ -202,8 +202,13 @@ function renderWeather(data, containerId) {
 
     // Обработчик кнопки
     detailsBtn.addEventListener('click', () => {
-        table.classList.toggle('visible');
-        detailsBtn.textContent = table.classList.contains('visible') ? 'Скрыть детали' : 'Показать детали';
+        if (table.style.display === 'none') {
+            table.style.display = 'table';
+            detailsBtn.textContent = 'Скрыть детали';
+        } else {
+            table.style.display = 'none';
+            detailsBtn.textContent = 'Показать детали';
+        }
     });
 
     container.appendChild(card);
@@ -237,7 +242,7 @@ function renderComparison(data, containerId) {
     container.appendChild(summaryDiv);
 }
 
-// Вспомогательная функция для заполнения карточки города (аналогично renderWeather, но без контейнера)
+// Вспомогательная функция для заполнения карточки города  
 function fillCityCard(card, cityData) {
     // Город
     const cityDiv = document.createElement('div');
@@ -261,9 +266,10 @@ function fillCityCard(card, cityData) {
     detailsBtn.textContent = 'Показать детали';
     card.appendChild(detailsBtn);
 
-    // Таблица деталей
+    // Таблица деталей (изначально скрыта)
     const table = document.createElement('table');
     table.className = 'details-table';
+    table.style.display = 'none'; // <-- скрываем сразу
     table.innerHTML = `
         <thead>
             <tr><th>Источник</th><th>Температура (°C)</th><th>Ветер (км/ч)</th><th>Условия</th></tr>
@@ -282,8 +288,13 @@ function fillCityCard(card, cityData) {
     card.appendChild(table);
 
     detailsBtn.addEventListener('click', () => {
-        table.classList.toggle('visible');
-        detailsBtn.textContent = table.classList.contains('visible') ? 'Скрыть детали' : 'Показать детали';
+        if (table.style.display === 'none') {
+            table.style.display = 'table';
+            detailsBtn.textContent = 'Скрыть детали';
+        } else {
+            table.style.display = 'none';
+            detailsBtn.textContent = 'Показать детали';
+        }
     });
 }
 // ==================== DOM ЭЛЕМЕНТЫ ====================
