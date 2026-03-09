@@ -5,8 +5,7 @@ using System.Text.RegularExpressions;
  
 public static class CityNameValidator
 {
-    // Допустимые символы: любые буквы (включая русские), пробелы, дефисы
-    private static readonly Regex ValidCityRegex = new(@"^[\p{L}\s\-]+$", RegexOptions.Compiled);
+     private static readonly Regex ValidCityRegex = new(@"^[\p{L}\s\-]+$", RegexOptions.Compiled);
 
     public static bool IsValid(string cityName, out string errorMessage)
     {

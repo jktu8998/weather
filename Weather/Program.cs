@@ -15,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Добавляем OpenAPI (для документации)
 builder.Services.AddOpenApi();
-
+ 
 // Добавляем контекст базы данных SQLite
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
