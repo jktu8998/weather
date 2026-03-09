@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+    <!-- Блок авторизации -->
+    <div id="auth-block" class="container">
+        <div id="login-form">
+            <h2>Вход</h2>
+            <input type="email" id="login-email" placeholder="Email" required>
+            <input type="password" id="login-password" placeholder="Пароль" required>
+            <button id="login-btn">Войти</button>
+            <p>Нет аккаунта? <a href="#" id="show-register">Зарегистрироваться</a></p>
+        </div>
+        <div id="register-form" style="display: none;">
+            <h2>Регистрация</h2>
+            <input type="email" id="reg-email" placeholder="Email" required>
+            <input type="password" id="reg-password" placeholder="Пароль" required>
+            <button id="register-btn">Зарегистрироваться</button>
+            <p>Уже есть аккаунт? <a href="#" id="show-login">Войти</a></p>
+        </div>
+    </div>
+
+    <!-- Блок погоды (скрыт по умолчанию) -->
+    <div id="weather-block" class="container" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Погода</h1>
+            <button id="logout-btn">Выйти</button>
+        </div>
+
+        <hr>
+
+        <!-- Смена пароля и удаление аккаунта -->
+        <details>
+            <summary>Управление аккаунтом</summary>
+            <div>
+                <h3>Смена пароля</h3>
+                <input type="password" id="current-password" placeholder="Текущий пароль">
+                <input type="password" id="new-password" placeholder="Новый пароль">
+                <button id="change-password-btn">Сменить пароль</button>
+            </div>
+            <div>
+                <h3>Удаление аккаунта</h3>
+                <input type="password" id="delete-password" placeholder="Подтвердите пароль">
+                <button id="delete-account-btn">Удалить аккаунт</button>
+            </div>
+        </details>
+
+        <hr>
+
+        <!-- Одиночный город -->
+        <div>
+            <h3>Погода в городе</h3>
+            <input type="text" id="city-single" placeholder="Введите город" required>
+            <button id="get-weather-btn">Узнать погоду</button>
+            <div id="weather-result" class="weather-card"></div>
+         </div>
+
+        <!-- Сравнение двух городов -->
+        <div>
+            <h3>Сравнить два города</h3>
+            <input type="text" id="city1" placeholder="Первый город" required>
+            <input type="text" id="city2" placeholder="Второй город" required>
+            <button id="compare-btn">Сравнить</button>
+            <div id="compare-result" class="compare-container"></div>        </div>
+    </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

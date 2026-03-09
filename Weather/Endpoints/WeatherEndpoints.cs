@@ -13,21 +13,19 @@ public static class WeatherEndpoints
             .RequireAuthorization()
             .WithTags("Weather");
 
-        // GET /api/weather/{city}
-        group.MapGet("/{city}", async (
+         group.MapGet("/{city}", async (
                 string city,
                 CancellationToken cancellationToken,
                 [FromServices] IWeatherAggregator aggregator,
                 [FromServices] IGeocodingService geocodingService,
                 [FromServices] ILogger<Program> logger) =>
             {
-                 if (!CityNameValidator.IsValid(city, out var validationError))
+                if (!CityNameValidator.IsValid(city, out var validationError))
                 {
                     logger.LogWarning("Невалидное имя города: {City}, ошибка: {Error}", city, validationError);
                     return Results.BadRequest(new { Error = validationError });
                 }
-
-                //  Проверка существования города через геокодинг
+                
                 var geoResult = await geocodingService.GetCoordinatesAsync(city, cancellationToken);
                 if (geoResult == null)
                 {
@@ -59,7 +57,7 @@ public static class WeatherEndpoints
                 [FromServices] IGeocodingService geocodingService,
                 [FromServices] ILogger<Program> logger) =>
             {
-                 if (request.Cities.Count != 2)
+                if (request.Cities.Count != 2)
                 {
                     logger.LogWarning("Некорректное количество городов: {Count}", request.Cities.Count);
                     return Results.BadRequest(new { Error = "Exactly two cities are required" });
@@ -68,7 +66,6 @@ public static class WeatherEndpoints
                 var city1 = request.Cities[0];
                 var city2 = request.Cities[1];
 
-                // Валидация формата каждого города
                 foreach (var city in request.Cities)
                 {
                     if (!CityNameValidator.IsValid(city, out var cityError))
@@ -96,15 +93,14 @@ public static class WeatherEndpoints
                     logger.LogWarning("Город {City} не найден в геокодинге", city2);
                     return Results.NotFound(new { Error = $"City '{city2}' not found" });
                 }
-
-                // Используем официальные названия
+                
                 var officialCity1 = geo1.Name;
                 var officialCity2 = geo2.Name;
 
                 logger.LogInformation("Запрос на сравнение городов: {City1} -> {Official1}, {City2} -> {Official2}",
                     city1, officialCity1, city2, officialCity2);
 
-                // Вызываем сервис сравнения  
+                // Вызываем сервис сравнения
                 var result = await comparisonService.CompareAsync(officialCity1, officialCity2, cancellationToken);
 
                 if (result == null)

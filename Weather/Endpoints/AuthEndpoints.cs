@@ -38,7 +38,7 @@ public static class AuthEndpoints
             .WithName("Refresh")
             .WithOpenApi();
     
-        //var meGroup = group.MapGroup("/me").RequireAuthorization();
+         
 
         group.MapPost("/update", async (ChangePasswordRequest request, IAuthService authService, HttpContext httpContext) =>
             {
