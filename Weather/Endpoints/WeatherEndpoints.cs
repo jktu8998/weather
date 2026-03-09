@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+using Weather.Extensions;
 using Weather.Interfaces;
 
 namespace Weather.Endpoints;
@@ -20,8 +22,9 @@ public static class WeatherEndpoints
         group.MapGet("/{city}", async (string city, [FromServices] IWeatherAggregator aggregator,
         [FromServices]ILogger<Program> logger) =>
             {
-                if (string.IsNullOrWhiteSpace(city))
-                    return Results.BadRequest("City is required");
+                if (!CityNameValidator.IsValid(city, out var error))
+                    return Results.BadRequest(new { Error = error });
+                
                 logger.LogInformation("Получен GET-запрос для города {City}", city);
                 var result = await aggregator.GetWeatherWithCacheAsync(city);
                 if (result == null)
@@ -40,6 +43,12 @@ public static class WeatherEndpoints
         
             var city1 = request.Cities[0];
             var city2 = request.Cities[1];
+            // Валидация каждого названия города
+            foreach (var city in request.Cities)
+            {
+                if (!CityNameValidator.IsValid(city, out var cityError))
+                    return Results.BadRequest(new { Error = $"Invalid city name '{city}': {cityError}" });
+            }
         
             // Получаем данные (из кеша или напрямую)
             var result1 = await aggregator.GetWeatherWithCacheAsync(city1);
