@@ -53,11 +53,15 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpClient<OpenWeatherMapProvider>(client =>
 {
     client.BaseAddress = new Uri("https://api.openweathermap.org/");
+    client.Timeout = TimeSpan.FromSeconds(10);
+
 });
 
 builder.Services.AddHttpClient<WeatherApiProvider>(client =>
 {
     client.BaseAddress = new Uri("https://api.weatherapi.com/");
+    client.Timeout = TimeSpan.FromSeconds(10);
+
 });
 // Добавляем HttpClient для wttr.in
 builder.Services.AddHttpClient<WttrInProvider>(client =>
@@ -65,6 +69,8 @@ builder.Services.AddHttpClient<WttrInProvider>(client =>
     client.BaseAddress = new Uri("https://wttr.in/");
     // wttr.in может блокировать запросы без User-Agent
     client.DefaultRequestHeaders.Add("User-Agent", "WeatherApp/1.0");
+    client.Timeout = TimeSpan.FromSeconds(10);
+
 });
 // Регистрируем HTTP-клиента для геокодинга
 builder.Services.AddHttpClient<OpenMeteoGeocodingService>(client =>
@@ -72,6 +78,8 @@ builder.Services.AddHttpClient<OpenMeteoGeocodingService>(client =>
     client.BaseAddress = new Uri("https://geocoding-api.open-meteo.com/v1/");
     client.DefaultRequestHeaders.Add("Accept", "application/json");
     client.DefaultRequestHeaders.Add("User-Agent", "YourWeatherApp/1.0");
+    client.Timeout = TimeSpan.FromSeconds(10);
+
 });
 
 // Регистрируем HTTP-клиента для погодного API Open-Meteo
@@ -80,6 +88,8 @@ builder.Services.AddHttpClient<OpenMeteoProvider>(client =>
     client.BaseAddress = new Uri("https://api.open-meteo.com/v1/");
     client.DefaultRequestHeaders.Add("Accept", "application/json");
     client.DefaultRequestHeaders.Add("User-Agent", "YourWeatherApp/1.0");
+    client.Timeout = TimeSpan.FromSeconds(10);
+
 });
 
 // Регистрируем провайдер OpenMeteo
@@ -103,7 +113,7 @@ builder.Services.AddScoped<IWeatherProvider, WttrInProvider>(sp =>
 
 
 builder.Services.AddScoped<IWeatherAggregator, WeatherAggregator>();
-
+builder.Services.AddScoped<IWeatherComparisonService, WeatherComparisonService>();
 builder.Services.AddMemoryCache();
 
 var app = builder.Build();
