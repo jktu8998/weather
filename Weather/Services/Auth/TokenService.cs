@@ -1,10 +1,9 @@
+namespace Weather.Services.Auth;
+
 using Weather.Configurations;
 using Weather.Data;
 using Weather.Interfaces;
 using Weather.Models;
-
-namespace Weather.Services;
-
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;

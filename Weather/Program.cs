@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Weather.Data;
 using Weather.Endpoints;
-using Weather.Services;
 using Weather.Configurations;
 using Weather.Interfaces;
 using Weather.Middlewares;
+using Weather.Services.Auth;
 using Weather.Services.Geocoding;
 using Weather.Services.WeatherService;
 
@@ -124,16 +124,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseMiddleware<ExceptionHandlingMiddleware>();
-//app.Use(async (context, next) =>
-//{
-//    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-//    logger.LogInformation("Incoming request: {Method} {Path}", context.Request.Method, context.Request.Path);
-//    await next();
-//});
-// Здесь позже будут наши эндпоинты (регистрация, логин, погода)
-app.UseAuthentication();
 app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapAuthEndpoints();
 app.MapWeatherEndpoints();
