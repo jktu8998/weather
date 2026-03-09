@@ -30,8 +30,7 @@ public class TokenService : ITokenService
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email)
-            // можно добавить роли и т.д.
-        };
+         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -69,23 +68,13 @@ public class TokenService : ITokenService
         return   Task.FromResult(token);   // возвращаем завершённую задачу
     }
 
-    // public async Task<bool> ValidateRefreshTokenAsync(int userId, string refreshToken)
-    // {
-    //     var token = await _context.RefreshTokens
-    //         .FirstOrDefaultAsync(rt => rt.UserId == userId && rt.Token == refreshToken);
-    //
-    //     if (token == null || token.IsRevoked || token.ExpiryDate < DateTime.UtcNow)
-    //         return false;
-    //
-    //     return true;
-    // }
+    
      public async Task RevokeRefreshTokenAsync(string refreshToken)
      {
          var token = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken);
          if (token != null)
          {
-             token.IsRevoked = true;
-             //await _context.SaveChangesAsync();
+             token.IsRevoked = true; 
          }
      }
     public async Task RevokeAllUserRefreshTokensAsync(int userId)
@@ -93,6 +82,5 @@ public class TokenService : ITokenService
         await _context.RefreshTokens
             .Where(rt => rt.UserId == userId && !rt.IsRevoked)
             .ExecuteUpdateAsync(setters => setters.SetProperty(rt => rt.IsRevoked, true));
-        //await _context.SaveChangesAsync();
-    }
+     }
 }

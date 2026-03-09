@@ -22,11 +22,8 @@ public class WttrInProvider : IWeatherProvider
 
    public async Task<WeatherData?> GetWeatherAsync(string city, CancellationToken cancellationToken = default)
 {
-    
-
-    // 2. Экранирование и формирование URL
     var encodedCity = Uri.EscapeDataString(city);
-    var url = $"{encodedCity}?format=j1"; // базовый адрес уже установлен в HttpClient
+    var url = $"{encodedCity}?format=j1";  
 
     var stopwatch = Stopwatch.StartNew();
 
@@ -34,13 +31,13 @@ public class WttrInProvider : IWeatherProvider
     {
         _logger.LogInformation("Запрос к wttr.in для города {City}", city);
 
-        // 3. Выполнение запроса
+        //  Выполнение запроса
         var response = await _httpClient.GetAsync(url, cancellationToken);
 
         var httpElapsed = stopwatch.ElapsedMilliseconds;
-        stopwatch.Restart(); // для замера парсинга
+        stopwatch.Restart();  
 
-        // 4. Обработка неуспешного статуса
+        // Обработка неуспешного статуса
         if (!response.IsSuccessStatusCode)
         {
             string? responseBody = null;
@@ -53,7 +50,7 @@ public class WttrInProvider : IWeatherProvider
             return null;
         }
 
-        // 5. Чтение и парсинг JSON
+        //  Чтение и парсинг JSON
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
@@ -69,14 +66,14 @@ public class WttrInProvider : IWeatherProvider
 
         var currentCondition = currentConditionArray[0];
 
-        // Безопасное извлечение температуры (строковое поле)
+        // Безопасное извлечение температуры 
         if (!TryGetDoubleFromString(currentCondition, "temp_C", out var temp))
         {
             _logger.LogWarning("Не удалось распарсить температуру в ответе wttr.in для города {City}", city);
             return null;
         }
 
-        // Безопасное извлечение скорости ветра (строковое поле)
+        // Безопасное извлечение скорости ветра  
         if (!TryGetDoubleFromString(currentCondition, "windspeedKmph", out var windSpeed))
         {
             _logger.LogWarning("Не удалось распарсить скорость ветра в ответе wttr.in для города {City}", city);

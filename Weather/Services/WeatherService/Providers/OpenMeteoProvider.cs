@@ -72,7 +72,7 @@ public class OpenMeteoProvider : IWeatherProvider
 
         var response = await _httpClient.GetAsync(url, cancellationToken);
 
-        // Замер времени выполнения HTTP запроса (без парсинга)
+        // Замер времени выполнения HTTP запроса
         var httpElapsed = weatherStopwatch.ElapsedMilliseconds;
         weatherStopwatch.Restart(); // для замера парсинга
 

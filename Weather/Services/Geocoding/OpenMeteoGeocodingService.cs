@@ -65,8 +65,7 @@ public class OpenMeteoGeocodingService : IGeocodingService
                 var longitude = first.GetProperty("longitude").GetDouble();
                 var name = first.TryGetProperty("name", out var nameProp) ? nameProp.GetString() ?? city : city;
 
-                // Пытаемся получить display_name (иногда есть поле "display_name", но в Open-Meteo его нет,
-                // можно составить из name, admin1, country)
+                // Пытаемся получить display_name  
                 var country = first.TryGetProperty("country", out var countryProp) ? countryProp.GetString() ?? "" : "";
                 var admin1 = first.TryGetProperty("admin1", out var admin1Prop) ? admin1Prop.GetString() ?? "" : "";
                 var displayName = string.IsNullOrEmpty(admin1) ? $"{name}, {country}" : $"{name}, {admin1}, {country}";

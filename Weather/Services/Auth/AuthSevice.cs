@@ -163,7 +163,7 @@ public class AuthService : IAuthService
                 throw new UnauthorizedException("Current password is incorrect");
             }
         
-            // Удаляем все связанные refresh-токены (или помечаем отозванными)
+            // Удаляем все связанные refresh-токены  
             var refreshTokens = _context.RefreshTokens.Where(rt => rt.UserId == userId);
             _context.RefreshTokens.RemoveRange(refreshTokens);
         
@@ -172,6 +172,5 @@ public class AuthService : IAuthService
             await _context.SaveChangesAsync();
         
             _logger.LogInformation("Account deleted for user {UserId}", userId);
-            //return new AuthResult { Success = true, Message = "Account deleted successfully" };
-         }
+          }
 }

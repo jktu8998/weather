@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  weather-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: weather-app
+    ports:
+      - "5000:8080"   # Доступно на localhost:5000
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # Строка подключения к SQLite  
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/weather.db
+      # JWT настройки (из .env)
+      - JwtSettings__Key=${JWT_KEY}
+      - JwtSettings__Issuer=${JWT_ISSUER}
+      - JwtSettings__Audience=${JWT_AUDIENCE}
+      # Ключи погодных API (из .env)
+      - WeatherProviders__OpenWeatherMap__Key=${OPENWEATHER_KEY}
+      - WeatherProviders__WeatherAPI__Key=${WEATHERAPI_KEY}
+       # - WeatherProviders__SomeProvider__Key=${SOME_KEY}
+    volumes:
+      - weather-data:/app/data   # сохраняем базу данных между запусками
+    restart: unless-stopped
+
+volumes:
+  weather-data:

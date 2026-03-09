@@ -20,7 +20,6 @@ public class OpenWeatherMapProvider : IWeatherProvider
     {
         _logger = logger;
         _httpClient = httpClient;
-        // Ключ будет загружаться из конфигурации (User Secrets)
         _apiKey = configuration["WeatherProviders:OpenWeatherMap:Key"] 
                   ?? throw new InvalidOperationException("OpenWeatherMap API key not found");
     }
@@ -29,7 +28,7 @@ public class OpenWeatherMapProvider : IWeatherProvider
 {
      
 
-    // 2. Экранирование города для URL
+    //  Экранирование города для URL
     var escapedCity = Uri.EscapeDataString(city);
     var url = $"data/2.5/weather?q={escapedCity}&appid={_apiKey}&units=metric";
 
@@ -43,7 +42,7 @@ public class OpenWeatherMapProvider : IWeatherProvider
         var response = await _httpClient.GetAsync(url, cancellationToken);
 
         var httpElapsed = stopwatch.ElapsedMilliseconds;
-        stopwatch.Restart(); // для замера парсинга
+        stopwatch.Restart();  
 
         // 4. Обработка неуспешного статуса
         if (!response.IsSuccessStatusCode)

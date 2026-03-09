@@ -1,12 +1,9 @@
 namespace Weather.Endpoints;
 
 using System.Security.Claims;
-//using Microsoft.AspNetCore.Identity.Data;
 using Weather.Interfaces;
-using System.ComponentModel.DataAnnotations;
 using Weather.DTOs.Auth;
-using Weather.Services.Auth;
-
+ 
 
 public static class AuthEndpoints
 {

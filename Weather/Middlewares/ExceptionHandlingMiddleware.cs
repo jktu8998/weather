@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-    private readonly IWebHostEnvironment _env; // добавим, чтобы в разработке показывать детали
+    private readonly IWebHostEnvironment _env;  
 
     public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IWebHostEnvironment env)
     {
@@ -33,8 +33,7 @@ using Microsoft.Extensions.Logging;
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        // Определяем статус-код и сообщение в зависимости от типа исключения
-        int statusCode;
+         int statusCode;
         string message;
         string? details = null;
 
@@ -48,15 +47,14 @@ using Microsoft.Extensions.Logging;
                 statusCode = StatusCodes.Status401Unauthorized;
                 message = "Unauthorized";
                 break;
-            // потом можно добавить обработку других стандартных исключений, например, ArgumentException -> 400
-            case ArgumentException argEx:
+             case ArgumentException argEx:
                 statusCode = StatusCodes.Status400BadRequest;
                 message = argEx.Message;
                 break;
             default:
                 statusCode = StatusCodes.Status500InternalServerError;
                 message = "An internal server error occurred.";
-                details = exception.Message; // в проде лучше не показывать
+                details = exception.Message;  
                 break;
         }
 
@@ -73,8 +71,7 @@ using Microsoft.Extensions.Logging;
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json";
 
-        // Формируем ответ
-        var response = new
+         var response = new
         {
             error = message,
             details = _env.IsDevelopment() ? details : null // показываем детали только в разработке

@@ -39,8 +39,7 @@ public class WeatherApiProvider : IWeatherProvider
     try
     {
         _logger.LogInformation("Запрос к WeatherAPI для города {City} по URL {Url}", city, url);
-
-        // Выполняем HTTP-запрос с поддержкой отмены
+        
         var response = await _httpClient.GetAsync(url, cancellationToken);
 
         // Замеряем время получения ответа
